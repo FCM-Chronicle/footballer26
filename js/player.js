@@ -75,9 +75,9 @@ class Player {
             return;
         }
         
-        // 레벨업 체크 (경험치 30당 레벨 1)
-        while (this.exp >= 30) {
-            this.exp -= 30;
+        // 레벨업 체크 (경험치 5당 레벨 1)
+        while (this.exp >= 5) {
+            this.exp -= 5;
             this.level++;
             ui.showNotification(`⬆️ 레벨 업! 현재 레벨: ${this.level}`);
         }
