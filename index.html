@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>선수 커리어 모드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .game-date {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: flex;
+            min-height: 600px;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-right: 2px solid #e0e0e0;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 30px;
+        }
+
+        .player-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .player-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 10px;
+        }
+
+        .player-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.95em;
+        }
+
+        .info-item {
+            padding: 8px;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .match-result {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .score {
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            color: #1e3c72;
+            margin: 10px 0;
+        }
+
+        .event-log {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .event-item {
+            padding: 5px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .news-item {
+            background: #fff9e6;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+
+        .news-source {
+            font-weight: bold;
+            color: #d32f2f;
+            margin-bottom: 5px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .trait-badge {
+            display: inline-block;
+            background: #4caf50;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            margin: 3px;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .level-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .captain-badge {
+            display: inline-block;
+            background: #ffd700;
+            color: #333;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 2px solid #e0e0e0;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏆 선수 커리어 모드</h1>
+            <div class="game-date" id="gameDate">2026년 1월 1일</div>
+        </header>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="player-card">
+                    <div class="player-name" id="playerName">선수 등록 필요</div>
+                    <div class="player-info" id="playerInfo">
+                        <!-- 동적으로 채워짐 -->
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">빠른 메뉴</div>
+                    <button class="btn btn-block" onclick="ui.showTraining()">매일 훈련</button>
+                    <button class="btn btn-block" onclick="ui.showNextMatch()">다음 경기</button>
+                    <button class="btn btn-block" onclick="ui.showTransfer()">이적 시장</button>
+                    <button class="btn btn-block" onclick="ui.showStats()">통계 보기</button>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">커리어 목표</div>
+                    <div style="font-size: 0.9em; color: #666;">
+                        <p>✓ K리그에서 시작</p>
+                        <p>✓ 유럽 진출</p>
+                        <p>✓ 챔피언스 리그 우승</p>
+                        <p>✓ 국가대표 선발</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-area" id="contentArea">
+                <div class="section">
+                    <div class="section-title">환영합니다!</div>
+                    <p style="font-size: 1.1em; line-height: 1.6;">
+                        선수 커리어 모드에 오신 것을 환영합니다!<br><br>
+                        16세의 유망주로 시작하여 세계 최고의 선수가 되어보세요.<br>
+                        매일 훈련하고, 경기에서 활약하며, 더 큰 무대로 도약하세요!
+                    </p>
+                    <div class="action-buttons">
+                        <button class="btn btn-success" onclick="ui.showRegistration()">선수 등록하기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 선수 등록 모달 -->
+    <div class="modal" id="registrationModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 20px;">선수 등록</h2>
+            <form id="registrationForm">
+                <div class="form-group">
+                    <label>선수 이름</label>
+                    <input type="text" id="playerNameInput" required>
+                </div>
+                <div class="form-group">
+                    <label>포지션</label>
+                    <select id="positionInput" required>
+                        <option value="">선택하세요</option>
+                        <option value="GK">골키퍼 (GK)</option>
+                        <option value="DF">수비수 (DF)</option>
+                        <option value="MF">미드필더 (MF)</option>
+                        <option value="FW">공격수 (FW)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>등번호</label>
+                    <input type="number" id="numberInput" min="1" max="99" required>
+                </div>
+                <div class="form-group">
+                    <label>시작 팀 (3부 리그)</label>
+                    <select id="teamInput" required>
+                        <option value="">선택하세요</option>
+                        <!-- JavaScript로 동적 로드 -->
+                    </select>
+                </div>
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-success">등록 완료</button>
+                    <button type="button" class="btn btn-secondary" onclick="ui.closeModal('registrationModal')">취소</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 경기 결과 모달 -->
+    <div class="modal" id="matchModal">
+        <div class="modal-content">
+            <div id="matchContent">
+                <!-- 동적으로 채워짐 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 이적 모달 -->
+    <div class="modal" id="transferModal">
+        <div class="modal-content">
+            <div id="transferContent">
+                <!-- 동적으로 채워짐 -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/league.js"></script>
+    <script src="js/names.js"></script>
+    <script src="js/traits.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/match.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
